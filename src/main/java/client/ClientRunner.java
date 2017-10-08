@@ -26,6 +26,7 @@ public class ClientRunner {
         private int index;
         private String hash;
         private String data;
+        private int nonce = 0;
 
         public Block(String prevHash, int index, String data) {
             this.prevHash = prevHash;
@@ -34,7 +35,25 @@ public class ClientRunner {
             this.hash = calculateHash();
         }
         public String calculateHash() {
-            return DigestUtils.sha256Hex(this.prevHash+this.index+this.data);
+            return DigestUtils.sha256Hex(this.prevHash+this.index+this.data+this.nonce);
+        }
+
+        public void mineBlock(int difficulty){
+            System.out.println("target = "+getTarget(difficulty));
+            while (!this.hash.substring(0,difficulty).equals("0")){
+                System.out.println("not found with: "+this.hash.substring(0,difficulty));
+                nonce++;
+                this.hash = calculateHash();
+            }
+            System.out.println("Block mined: "+this.getHash());
+        }
+
+        public String getTarget(int difficulty){
+            String target = "";
+            for (int i = 0; i < difficulty; i++) {
+                target = target + "0";
+            }
+            return target;
         }
 
         public String getHash() {
@@ -74,7 +93,9 @@ public class ClientRunner {
 
         public void addBlock(String data){
             index++;
-            this.chain.add(new Block(getLatestBlock().getHash(),index, data));
+            Block block = new Block(getLatestBlock().getHash(), index, data);
+            block.mineBlock(3);
+            this.chain.add(block);
         }
 
         @Override
